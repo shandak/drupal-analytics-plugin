@@ -1,0 +1,7 @@
+aesirx_analytics.config:
+  path: '/admin/structure/aesirx_analytics/config'
+  defaults:
+    _form: '\Drupal\aesirx_analytics\Form\AdminConfig\AesirxAnalyticsAdminConfigForm'
+    _title: 'Aesirx analytics configuration'
+  requirements:
+    _permission: 'administer aesirx_analytics'

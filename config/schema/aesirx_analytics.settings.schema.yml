@@ -1,0 +1,26 @@
+aesirx_analytics.settings:
+  type: config_object
+  label: 'aesirx analytics settings'
+  mapping:
+    settings:
+      type: mapping
+      label: 'aesirx analytics default settings'
+      mapping:
+        1st_party_server:
+          type: string
+          label: '1st party server'
+        consent:
+          type: boolean
+          label: 'consent'
+        client_id:
+          type: string
+          label: 'client id'
+        client_secret:
+          type: string
+          label: 'client secret'
+        license:
+          type: string
+          label: 'license'
+        domain:
+          type: string
+          label: 'domain'

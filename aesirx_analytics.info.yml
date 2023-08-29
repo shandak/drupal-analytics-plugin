@@ -1,0 +1,8 @@
+name: 'Aesirx Analytics'
+type: module
+description: 'Aesirx analytics plugin. When you join forces with AesirX, you&#039;re not just becoming a Partner - you&#039;re also becoming a freedom fighter in the battle for privacy!'
+package: Custom
+core_version_requirement: ^10
+configure: aesirx_analytics.config
+libraries:
+  - aesirx_analytics/aesirx_analytics.tracking

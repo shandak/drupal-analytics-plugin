@@ -1,0 +1,4 @@
+aesirx_analytics.tracking:
+  version: VERSION
+  js:
+    assets/js/dist/main.min.js: { minified: true }
