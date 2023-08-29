@@ -1,0 +1,5 @@
+aesirx_analytics.config:
+  title: 'Aesirx analytics configuration'
+  base_route_name: aesirx_analytics.config
+  names:
+    - aesirx_analytics.settings
