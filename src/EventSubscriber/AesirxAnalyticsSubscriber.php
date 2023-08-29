@@ -3,10 +3,12 @@
 namespace Drupal\aesirx_analytics\EventSubscriber;
 
 use Drupal\aesirx_analytics\AesirxAnalyticsCli;
+use Drupal\aesirx_analytics\Exception\ExceptionWithErrorType;
 use Drupal\aesirx_analytics\Exception\ExceptionWithResponseCode;
 use Drupal\aesirx_analytics\RouterFactory;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Pecee\SimpleRouter\Exceptions\NotFoundHttpException;
+use Pecee\SimpleRouter\SimpleRouter;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
@@ -31,31 +33,23 @@ class AesirxAnalyticsSubscriber implements EventSubscriberInterface {
 
 	public function onRequest(RequestEvent $event) {
 		if (($this->config_factory->get('aesirx_analytics.settings')
-			->get('settings.1st_party_server') ?? 'internal') != 'internal') {
+				->get('settings.1st_party_server') ?? 'internal') != 'internal')
+		{
 			return;
 		}
 
-		$callCommand = function (array $command): string {
-			$process = $this->cli->process_analytics($command);
+		$callCommand = function(array $command): string {
+			try
+			{
+				$process = $this->cli->process_analytics($command);
+			}
+			catch (Throwable $e)
+			{
+				$code = 500;
 
-			if ($process->isSuccessful()) {
-				if (!headers_sent()) {
-					header( 'Content-Type: application/json; charset=utf-8' );
-				}
-				return $process->getOutput();
-			} else {
-				$err = $process->getErrorOutput();
-
-				$decoded = json_decode($err);
-
-				if (json_last_error() === JSON_ERROR_NONE
-					&& $process->getExitCode() == 65) {
-					$message = $err;
-					if (!empty($decoded->message))
-					{
-						$message = $decoded->message;
-					}
-					switch ($decoded->error_type ?? null)
+				if ($e instanceof ExceptionWithErrorType)
+				{
+					switch ($decoded->error_type ?? NULL)
 					{
 						case "NotFoundError":
 							$code = 404;
@@ -66,33 +60,44 @@ class AesirxAnalyticsSubscriber implements EventSubscriberInterface {
 						case "Rejected":
 							$code = 406;
 							break;
-						default:
-							$code = 500;
 					}
-					throw new ExceptionWithResponseCode($message, $code);
 				}
 
-				throw new ExceptionWithResponseCode($err, 500);
+				throw new ExceptionWithResponseCode($e->getMessage(), $code, $e->getCode(), $e);
 			}
+
+			if (!headers_sent())
+			{
+				header('Content-Type: application/json; charset=utf-8');
+			}
+			return $process->getOutput();
 		};
 
-		try {
+		try
+		{
 			echo (new RouterFactory($callCommand, $event->getRequest()->getBaseUrl()))
 				->getSimpleRouter()
 				->start();
-		} catch (Throwable $e) {
-			if ($e instanceof NotFoundHttpException) {
+		}
+		catch (Throwable $e)
+		{
+			if ($e instanceof NotFoundHttpException)
+			{
 				return;
 			}
 
-			if ($e instanceof ExceptionWithResponseCode) {
+			if ($e instanceof ExceptionWithResponseCode)
+			{
 				$code = $e->getResponseCode();
-			} else {
+			}
+			else
+			{
 				$code = 500;
 			}
 
-			if (!headers_sent()) {
-				header( 'Content-Type: application/json; charset=utf-8' );
+			if (!headers_sent())
+			{
+				header('Content-Type: application/json; charset=utf-8');
 			}
 			http_response_code($code);
 			echo json_encode([
@@ -102,6 +107,7 @@ class AesirxAnalyticsSubscriber implements EventSubscriberInterface {
 
 		die();
 	}
+
 	/**
 	 * Returns an array of event names this subscriber wants to listen to.
 	 *
@@ -118,10 +124,12 @@ class AesirxAnalyticsSubscriber implements EventSubscriberInterface {
 	 *  * ['eventName' => ['methodName', $priority]]
 	 *  * ['eventName' => [['methodName1', $priority], ['methodName2']]]
 	 *
-	 * The code must not depend on runtime state as it will only be called at compile time.
-	 * All logic depending on runtime state must be put into the individual methods handling the events.
+	 * The code must not depend on runtime state as it will only be called at
+	 * compile time. All logic depending on runtime state must be put into the
+	 * individual methods handling the events.
 	 *
-	 * @return array<string, string|array{0: string, 1: int}|list<array{0: string, 1?: int}>>
+	 * @return array<string, string|array{0: string, 1: int}|list<array{0:
+	 *                       string, 1?: int}>>
 	 */
 	public static function getSubscribedEvents() {
 		//$events[KernelEvents::RESPONSE][] = ['onResponse', 100];

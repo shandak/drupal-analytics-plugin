@@ -1,0 +1,10 @@
+<script type="text/javascript">
+  window.env = {};
+  window.env.REACT_APP_CLIENT_ID = "app";
+  window.env.REACT_APP_CLIENT_SECRET = "secret";
+  window.env.REACT_APP_ENDPOINT_URL = "{{ content.endpoint_url }}";
+  window.env.REACT_APP_DATA_STREAM = JSON.stringify({{ content.data_stream|raw }});
+  window.env.PUBLIC_URL="{{ content.public_url }}";
+</script>
+{{ attach_library('aesirx_analytics/aesirx_analytics.bi') }}
+<div id="biapp" class="aesirxui"></div>

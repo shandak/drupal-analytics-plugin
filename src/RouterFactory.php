@@ -31,7 +31,7 @@ class RouterFactory {
 	/**
 	 * @param callable $callback
 	 */
-	public function __construct(callable $callback, string $basePath) {
+	public function __construct(callable $callback, string $basePath = NULL) {
 		$this->callback = $callback;
 		$this->router = (new Router())
 			->setRenderMultipleRoutes(FALSE);
@@ -426,7 +426,7 @@ class RouterFactory {
 
 		$this->router->addRoute(
 			(new RouteGroup())
-				->setSettings(['middleware' => IsBackendMiddleware::class])
+				//->setSettings(['middleware' => IsBackendMiddleware::class])
 				->setCallback(
 					function() {
 						$this->router->addRoute(

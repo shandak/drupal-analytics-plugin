@@ -59,7 +59,7 @@ class AesirxAnalyticsAdminConfigForm extends ConfigFormBase {
 
     $form['1st_party_server'] = [
       '#type' => 'radios',
-      '#title' => $this->t('Client ID'),
+      '#title' => $this->t('1st party server'),
       '#default_value' => $settings['1st_party_server'],
       '#options' => [
         AesirxAnalyticsInterface::INTERNAL => $this->t('Internal'),
@@ -175,6 +175,15 @@ class AesirxAnalyticsAdminConfigForm extends ConfigFormBase {
       '#element_validate' => [[get_class($this), 'validateInternalIsRequired']],
       '#description' => $this->t("<p class= 'description'>
         Register to AesirX and get your client id, client secret and license here: <a target='_blank' href='https://web3id.aesirx.io'>https://web3id.aesirx.io</a>.</p>")
+    ];
+
+    $form['banner'] = [
+      '#type' => 'item',
+      '#markup' => '<div class="aesirx_analytics_info"><div class="wrap">Invest $1000 as a seed fund and receive:
+      <ul><li>Rewards worth of $6000!</li><li> Many more exclusive benefits!</li></ul><div>
+
+      <p>* Apply for only the first 2000 investors</p>
+      <a target="_blank" href="https://aesirx.io/seed-round?utm_source=wpplugin&utm_medium=web&utm_campaign=wordpress&utm_id=aesirx&utm_term=wordpress&utm_content=analytics">Become a Community Investor Now!</a></div>',
     ];
 
     return parent::buildForm($form, $form_state);

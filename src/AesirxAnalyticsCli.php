@@ -2,6 +2,7 @@
 
 namespace Drupal\aesirx_analytics;
 
+use Drupal\aesirx_analytics\Exception\ExceptionWithErrorType;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Database\Database;
 use RuntimeException;
@@ -66,12 +67,15 @@ class AesirxAnalyticsCli {
     return $arch;
   }
 
+  /**
+   * @throws \Drupal\aesirx_analytics\Exception\ExceptionWithErrorType
+   */
   public function download_analytics_cli(): void {
     $arch = $this->get_supported_arch();
     file_put_contents($this->cliPath, fopen("https://github.com/aesirxio/analytics/releases/download/2.0.1/analytics-cli-linux-" . $arch, 'r'));
     chmod($this->cliPath, 0755);
 
-    self::process_analytics(['migrate']);
+    $this->process_analytics(['migrate']);
   }
 
   /**
@@ -79,6 +83,7 @@ class AesirxAnalyticsCli {
    * @param bool  $makeExecutable
    *
    * @return Process
+   * @throws \Drupal\aesirx_analytics\Exception\ExceptionWithErrorType
    * @global wpdb $wpdb WordPress database abstraction object.
    *
    */
@@ -88,6 +93,11 @@ class AesirxAnalyticsCli {
     if (!is_array($info))
     {
       throw new RuntimeException('Database connection not found');
+    }
+
+    if (!$this->analytics_cli_exists())
+    {
+      throw new RuntimeException('CLI analytics library not found');
     }
 
     $env = [
@@ -115,6 +125,27 @@ class AesirxAnalyticsCli {
 
     $process = new Process(array_merge([$this->cliPath], $command), NULL, $env);
     $process->run();
+
+    if (!$process->isSuccessful())
+    {
+      $message = $process->getErrorOutput();
+      $decoded = json_decode($message);
+      $type = NULL;
+
+      if (json_last_error() === JSON_ERROR_NONE
+        && $process->getExitCode() == 65)
+      {
+        if (!empty($decoded->message))
+        {
+          $message = $decoded->message;
+        }
+        if (!empty($decoded->error_type))
+        {
+          $type = $decoded->error_type;
+        }
+      }
+      throw new ExceptionWithErrorType($message, $type);
+    }
 
     return $process;
   }

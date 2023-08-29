@@ -1,7 +1,15 @@
 aesirx_analytics.config:
-  path: '/admin/structure/aesirx_analytics/config'
+  path: '/admin/config/services/aesirx_analytics'
   defaults:
     _form: '\Drupal\aesirx_analytics\Form\AdminConfig\AesirxAnalyticsAdminConfigForm'
     _title: 'Aesirx analytics configuration'
+  requirements:
+    _permission: 'administer aesirx_analytics'
+
+aesirx_analytics.aesirx_bi_dashboard:
+  path: '/admin/aesirx_bi_dashboard'
+  defaults:
+    _controller: '\Drupal\aesirx_analytics\Controller\Dashboard::index'
+    _title: 'Aesirx Analytics Dashboard'
   requirements:
     _permission: 'administer aesirx_analytics'

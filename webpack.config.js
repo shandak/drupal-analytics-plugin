@@ -10,7 +10,7 @@ const gitRevisionPlugin = new GitRevisionPlugin();
 module.exports = {
   mode: 'production',
   entry: {
-    plugin: './assets/raw/plugin/index.tsx',
+    config: './assets/raw/plugin/index.tsx',
     bi: './assets/raw/bi/index.tsx',
   },
   module: {
@@ -46,7 +46,6 @@ module.exports = {
     }),
     new DefinePlugin({
       VERSION: JSON.stringify(gitRevisionPlugin.version()),
-      //VERSION: '{\"version\":\"1.0.0\"}',
     }),
 
     new FileManagerPlugin({
@@ -75,7 +74,7 @@ module.exports = {
   ],
 
   output: {
-    filename: 'js/bi/[contenthash].js',
+    filename: 'bi/[contenthash].js',
     clean: true,
   },
 

@@ -7,12 +7,12 @@ const _ = require('lodash');
 
 require('dotenv').config();
 
-var dist = './assets/web/';
+var dist = './assets/';
 process.env.DIST = dist;
 
 async function cleanWeb() {
   const del = await import('del');
-  return del.deleteAsync(`${dist}/**`, { force: true });
+  return del.deleteAsync(`${dist}/{bi,data,js,images}/**`, { force: true });
 }
 
 // async function cleanTask() {
@@ -36,7 +36,7 @@ function webpackBIApp() {
   return gulp
     .src('./assets/raw/bi/index.tsx')
     .pipe(webpack(require('./webpack.config.js')))
-    .pipe(gulp.dest(`${dist}/js/bi`));
+    .pipe(gulp.dest(`${dist}`));
 }
 
 function webpackBIAppWatch() {

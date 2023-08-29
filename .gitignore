@@ -57,7 +57,11 @@ yarn-error.log
 /configuration.yaml
 /configurationKey.yaml
 
-assets/web
+assets/bi
+assets/data
+assets/images
+assets/js
+assets/assets-manifest.json
 assets/analytics-cli
 
 # Never ignore
