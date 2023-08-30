@@ -8,7 +8,6 @@ use Drupal\aesirx_analytics\Exception\ExceptionWithResponseCode;
 use Drupal\aesirx_analytics\RouterFactory;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Pecee\SimpleRouter\Exceptions\NotFoundHttpException;
-use Pecee\SimpleRouter\SimpleRouter;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;

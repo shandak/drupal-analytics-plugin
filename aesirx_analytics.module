@@ -103,6 +103,21 @@ function aesirx_analytics_form_alter(&$form, FormStateInterface $form_state, $fo
 	$form['#attached']['library'][] = 'aesirx_analytics/aesirx_analytics.config';
 }
 
+/**
+ * Implements hook_cron().
+ */
+function aesirx_analytics_cron() {
+  $request_time = \Drupal::time()->getRequestTime();
+  // Ask Geo data hourly.
+  if ($request_time - \Drupal::state()->get('aesirx_analytics.last_cache') >= 3600) {
+    \Drupal::state()->set('aesirx_analytics.last_cache', $request_time);
+    if (analytics_config_is_ok('internal')) {
+      \Drupal::service('aesirx_analytics.cli')
+        ->process_analytics(['job', 'geo']);
+    }
+  }
+}
+
 function analytics_config_is_ok(string $isStorage = NULL): bool {
 	$conf = \Drupal::config(AesirxAnalyticsAdminConfigForm::SETTINGS);
 	$storage = $conf->get('settings.1st_party_server');
