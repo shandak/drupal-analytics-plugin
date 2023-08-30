@@ -2,7 +2,7 @@
 
 namespace Drupal\aesirx_analytics;
 
-use AesirxAnalytics\Route\Middleware\IsBackendMiddleware;
+use Drupal\aesirx_analytics\Route\Middleware\IsBackendMiddleware;
 use Pecee\Http\Request;
 use Pecee\SimpleRouter\Event\EventArgument;
 use Pecee\SimpleRouter\Handlers\EventHandler;
@@ -426,7 +426,7 @@ class RouterFactory {
 
 		$this->router->addRoute(
 			(new RouteGroup())
-				//->setSettings(['middleware' => IsBackendMiddleware::class])
+				->setSettings(['middleware' => IsBackendMiddleware::class])
 				->setCallback(
 					function() {
 						$this->router->addRoute(

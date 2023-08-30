@@ -10,3 +10,7 @@ services:
     arguments: ['@config.factory', '@aesirx_analytics.cli']
     tags:
       - { name: event_subscriber }
+
+  aesirx_analytics.visibility:
+    class: Drupal\aesirx_analytics\Helpers\VisibilityTracker
+    arguments: [ '@config.factory', '@path_alias.manager', '@path.matcher', '@path.current' ]

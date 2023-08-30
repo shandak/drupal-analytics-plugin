@@ -5,7 +5,6 @@
   "private": true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "zip": "gulp zip",
     "build": "gulp build",
     "watch": "gulp watch",
     "format:check": "prettier --check .",
@@ -21,8 +20,6 @@
     "filemanager-webpack-plugin": "^8.0.0",
     "git-revision-webpack-plugin": "^5.0.0",
     "gulp": "^4.0.2",
-    "gulp-composer": "^0.4.5",
-    "gulp-zip": "^5.1.0",
     "lodash": "^4.17.21",
     "prettier": "^2.8.8",
     "process": "^0.11.10",

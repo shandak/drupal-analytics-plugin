@@ -1,6 +1,7 @@
 <?php
 
 use Drupal\aesirx_analytics\Form\AdminConfig\AesirxAnalyticsAdminConfigForm;
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
@@ -9,11 +10,23 @@ use Drupal\Core\Form\FormStateInterface;
  */
 
 function aesirx_analytics_page_attachments(array &$page): void {
-	if (!analytics_config_is_ok())
-	{
-		return;
-	}
-	$conf = \Drupal::config(AesirxAnalyticsAdminConfigForm::SETTINGS);
+  $conf = \Drupal::config(AesirxAnalyticsAdminConfigForm::SETTINGS);
+
+  // Add module cache tags.
+  $page['#cache']['tags'] = Cache::mergeTags($page['#cache']['tags'] ?? [], $conf->getCacheTags());
+
+  /** @var \Drupal\aesirx_analytics\Helpers\VisibilityTracker $visibilityTracker */
+  $visibilityTracker = \Drupal::service('aesirx_analytics.visibility');
+
+  $account = \Drupal::currentUser();
+
+  if (!$visibilityTracker->getVisibilityPages()
+    || !$visibilityTracker->getVisibilityRoles($account)
+    || !analytics_config_is_ok())
+  {
+    return;
+  }
+
 	$domain =
 		($conf->get('settings.1st_party_server') ?? 'internal') == 'internal'
 			? \Drupal::request()->getSchemeAndHttpHost()
@@ -53,6 +66,9 @@ function aesirx_analytics_theme($existing, $type, $theme, $path) {
 				],
 			],
 		],
+    'aesirx_config_form' => [
+      'render element' => 'form',
+    ],
 	];
 }
 

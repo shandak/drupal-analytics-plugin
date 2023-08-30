@@ -127,14 +127,12 @@ class AesirxAnalyticsAdminConfigForm extends ConfigFormBase {
     }
 
     $form['consent'] = [
-      '#type' => 'radios',
+      '#type' => 'checkbox',
       '#title' => $this->t('Consent'),
+      '#return_value' => TRUE,
       '#default_value' => $settings['consent'],
-      '#options' => [
-        TRUE => $this->t('Yes'),
-        FALSE => $this->t('No'),
-      ],
     ];
+
     $form['domain'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Domain (Use next format: http://example.com:1000/)'),
@@ -143,13 +141,16 @@ class AesirxAnalyticsAdminConfigForm extends ConfigFormBase {
         'visible' => [
           ':input[name="1st_party_server"]' => ['value' => AesirxAnalyticsInterface::EXTERNAL],
         ],
+        'required' => [
+          ':input[name="1st_party_server"]' => ['value' => AesirxAnalyticsInterface::EXTERNAL],
+        ],
       ],
       '#element_validate' => [
         [get_class($this), 'validateExternalIsRequired'],
         [get_class($this), 'validateDomain'],
       ],
       '#description' => $this->t("<p class= 'description'>
-		You can setup 1st party server at <a target='_blank' href='https://github.com/aesirxio/analytics-1stparty'>https://github.com/aesirxio/analytics-1stparty</a>.</p>")
+		You can setup 1st party server at <a target='_blank' href='https://github.com/aesirxio/analytics-1stparty'>https://github.com/aesirxio/analytics-1stparty</a>.</p>"),
     ];
     $form['client_id'] = [
       '#type' => 'textfield',
@@ -171,22 +172,112 @@ class AesirxAnalyticsAdminConfigForm extends ConfigFormBase {
         'visible' => [
           ':input[name="1st_party_server"]' => ['value' => AesirxAnalyticsInterface::INTERNAL],
         ],
+        'required' => [
+          ':input[name="1st_party_server"]' => ['value' => AesirxAnalyticsInterface::INTERNAL],
+        ],
       ],
       '#element_validate' => [[get_class($this), 'validateInternalIsRequired']],
       '#description' => $this->t("<p class= 'description'>
-        Register to AesirX and get your client id, client secret and license here: <a target='_blank' href='https://web3id.aesirx.io'>https://web3id.aesirx.io</a>.</p>")
+        Register to AesirX and get your client id, client secret and license here: <a target='_blank' href='https://web3id.aesirx.io'>https://web3id.aesirx.io</a>.</p>"),
     ];
 
-    $form['banner'] = [
-      '#type' => 'item',
-      '#markup' => '<div class="aesirx_analytics_info"><div class="wrap">Invest $1000 as a seed fund and receive:
-      <ul><li>Rewards worth of $6000!</li><li> Many more exclusive benefits!</li></ul><div>
-
-      <p>* Apply for only the first 2000 investors</p>
-      <a target="_blank" href="https://aesirx.io/seed-round?utm_source=wpplugin&utm_medium=web&utm_campaign=wordpress&utm_id=aesirx&utm_term=wordpress&utm_content=analytics">Become a Community Investor Now!</a></div>',
+    // Visibility settings.
+    $form['tracking_scope'] = [
+      '#type' => 'vertical_tabs',
     ];
 
-    return parent::buildForm($form, $form_state);
+    $visibility_request_path_pages = $config->get('visibility.request_path_pages');
+    $form['tracking']['page_visibility_settings'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Pages'),
+      '#group' => 'tracking_scope',
+    ];
+
+    if ($config->get('visibility.request_path_mode') == 2)
+    {
+      $form['tracking']['page_visibility_settings'] = [];
+      $form['tracking']['page_visibility_settings']['visibility_request_path_mode'] = [
+        '#type' => 'value',
+        '#value' => 2,
+      ];
+      $form['tracking']['page_visibility_settings']['visibility_request_path_pages'] = [
+        '#type' => 'value',
+        '#value' => $visibility_request_path_pages,
+      ];
+    }
+    else
+    {
+      $form['tracking']['page_visibility_settings']['visibility_request_path_mode'] = [
+        '#type' => 'radios',
+        '#title' => $this->t('Add tracking to specific pages'),
+        '#options' => [
+          $this->t('Every page except the listed pages'),
+          $this->t('The listed pages only'),
+        ],
+        '#default_value' => $config->get('visibility.request_path_mode'),
+      ];
+      $form['tracking']['page_visibility_settings']['visibility_request_path_pages'] = [
+        '#type' => 'textarea',
+        '#title' => $this->t('Pages'),
+        '#title_display' => 'invisible',
+        '#default_value' => !empty($visibility_request_path_pages) ? $visibility_request_path_pages : '',
+        '#description' => $this->t("Specify pages by using their paths. Enter one path per line. The '*' character is a wildcard. Example paths are %blog for the blog page and %blog-wildcard for every personal blog. %front is the front page.", [
+          '%blog' => '/blog',
+          '%blog-wildcard' => '/blog/*',
+          '%front' => '<front>',
+        ]),
+        '#rows' => 10,
+      ];
+    }
+
+    $visibility_user_role_roles = $config->get('visibility.user_role_roles');
+
+    $form['tracking']['role_visibility_settings'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Roles'),
+      '#group' => 'tracking_scope',
+    ];
+
+    $form['tracking']['role_visibility_settings']['visibility_user_role_mode'] = [
+      '#type' => 'radios',
+      '#title' => $this->t('Add tracking for specific roles'),
+      '#options' => [
+        $this->t('Add to the selected roles only'),
+        $this->t('Add to every role except the selected ones'),
+      ],
+      '#default_value' => $config->get('visibility.user_role_mode'),
+    ];
+    $form['tracking']['role_visibility_settings']['visibility_user_role_roles'] = [
+      '#type' => 'checkboxes',
+      '#title' => $this->t('Roles'),
+      '#default_value' => !empty($visibility_user_role_roles) ? $visibility_user_role_roles : [],
+      '#options' => array_map('\Drupal\Component\Utility\Html::escape', user_role_names()),
+      '#description' => $this->t('If none of the roles are selected, all users will be tracked. If a user has any of the roles checked, that user will be tracked (or excluded, depending on the setting above).'),
+    ];
+
+    $form = parent::buildForm($form, $form_state);
+
+    $form['#theme'] = 'aesirx_config_form';
+
+    return $form;
+  }
+
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+    parent::validateForm($form, $form_state);
+    $form_state->setValue('visibility_request_path_pages', trim($form_state->getValue('visibility_request_path_pages')));
+    // Verify that every path is prefixed with a slash, but don't check PHP
+    // code snippets and do not check for slashes if no paths configured.
+    if ($form_state->getValue('visibility_request_path_mode') != 2
+      && !empty($form_state->getValue('visibility_request_path_pages'))) {
+      $pages = preg_split('/(\r\n?|\n)/', $form_state->getValue('visibility_request_path_pages'));
+      foreach ($pages as $page) {
+        if (strpos($page, '/') !== 0 && $page !== '<front>') {
+          $form_state->setErrorByName('visibility_request_path_pages', $this->t('Path "@page" not prefixed with slash.', ['@page' => $page]));
+          // Drupal forms show one error only.
+          break;
+        }
+      }
+    }
   }
 
   public function download_cli_button(array &$form, FormStateInterface $form_state) {
@@ -214,6 +305,10 @@ class AesirxAnalyticsAdminConfigForm extends ConfigFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $this->config(self::SETTINGS)
       ->set('settings', $form_state->cleanValues()->getValues())
+      ->set('visibility.request_path_mode', $form_state->getValue('visibility_request_path_mode'))
+      ->set('visibility.request_path_pages', $form_state->getValue('visibility_request_path_pages'))
+      ->set('visibility.user_role_mode', $form_state->getValue('visibility_user_role_mode'))
+      ->set('visibility.user_role_roles', $form_state->getValue('visibility_user_role_roles'))
       ->save();
 
     parent::submitForm($form, $form_state);
