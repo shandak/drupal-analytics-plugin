@@ -48,7 +48,7 @@ class AesirxAnalyticsSubscriber implements EventSubscriberInterface {
 
         if ($e instanceof ExceptionWithErrorType)
         {
-          switch ($decoded->error_type ?? NULL)
+          switch ($e->getErrorType())
           {
             case "NotFoundError":
               $code = 404;

@@ -3,6 +3,7 @@
 namespace Drupal\aesirx_analytics\Exception;
 
 use Exception;
+use Throwable;
 
 class ExceptionWithErrorType extends Exception {
 
