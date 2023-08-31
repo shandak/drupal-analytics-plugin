@@ -30,7 +30,7 @@ function aesirx_analytics_page_attachments(array &$page): void {
 	$domain =
 		($conf->get('settings.1st_party_server') ?? 'internal') == 'internal'
 			? \Drupal::request()->getSchemeAndHttpHost()
-			: $conf->get('settings.domain') ?? '';
+			: rtrim($conf->get('settings.domain') ?? '', '/');
 
 	$consent =
 		($conf->get('settings.consent') ?? 'false') == 'true'

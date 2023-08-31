@@ -50,7 +50,7 @@ class AesirxAnalyticsAdminConfigForm extends ConfigFormBase {
     $config = $this->config(self::SETTINGS);
     $settings = $config->get('settings');
 
-    $form['help'] = [
+    $form['info'] = [
       '#type' => 'item',
       '#markup' => $this->t('<p>Read more detail at <a target="_blank" href="https://github.com/aesirxio/analytics#in-ssr-site">https://github.com/aesirxio/analytics#in-ssr-site</a></p><p class= "description">
         <p>Note: Please set Permalink structure is NOT plain.</p></p>'),
@@ -68,6 +68,7 @@ class AesirxAnalyticsAdminConfigForm extends ConfigFormBase {
 
     if ($this->cli->analytics_cli_exists())
     {
+      $hidden = 'exists';
       try
       {
         $this->cli->process_analytics(['--version']);
@@ -83,6 +84,7 @@ class AesirxAnalyticsAdminConfigForm extends ConfigFormBase {
       }
       catch (Throwable $e)
       {
+        $hidden = 'error';
         $form['check_cli'] = [
           '#type' => 'item',
           '#markup' => '<b class="color-error">' . $this->t('You can\'t use internal server. Error: ' . $e->getMessage()) . '</b>',
@@ -96,6 +98,7 @@ class AesirxAnalyticsAdminConfigForm extends ConfigFormBase {
     }
     else
     {
+      $hidden = 'not_exists';
       try
       {
         $this->cli->get_supported_arch();
@@ -113,6 +116,7 @@ class AesirxAnalyticsAdminConfigForm extends ConfigFormBase {
       }
       catch (Throwable $e)
       {
+        $hidden = 'error';
         $form['check_cli'] = [
           '#type' => 'item',
           '#markup' => '<b class="color-error">' . $this->t('You can\'t use internal server. Error: ' . $e->getMessage()) . '</b>',
@@ -124,6 +128,11 @@ class AesirxAnalyticsAdminConfigForm extends ConfigFormBase {
         ];
       }
     }
+
+    $form['cli'] = [
+      '#type' => 'hidden',
+      '#value' => $hidden,
+    ];
 
     $form['consent'] = [
       '#type' => 'checkbox',
@@ -291,6 +300,10 @@ class AesirxAnalyticsAdminConfigForm extends ConfigFormBase {
       $this->messenger()
         ->addError($this->t('Downloading failed: ') . $e->getMessage());
     }
+
+    $form_state->setValue('cli', 'exists');
+
+    $this->submitForm($form, $form_state);
   }
 
   /**
