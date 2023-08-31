@@ -38,7 +38,7 @@ class Dashboard extends ControllerBase {
 		$endpoint =
 			($conf->get('settings.1st_party_server') ?? 'internal') == 'internal'
 				? $host
-				: $conf->get('settings.domain') ?? '';
+				: rtrim($conf->get('settings.domain') ?? '', '/');
 
 		return [
 			'#theme' => 'bi-dashboard',
