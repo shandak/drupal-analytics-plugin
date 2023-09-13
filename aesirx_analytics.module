@@ -89,7 +89,9 @@ function aesirx_analytics_library_info_alter(&$libraries, $extension) {
 	{
 		foreach ($manifest->entrypoints->{$one}->assets->js ?? [] as $js)
 		{
-			$libraries['aesirx_analytics.' . $one]['js']['assets/' . $js] = [];
+			$libraries['aesirx_analytics.' . $one]['js']['assets/' . $js] = [
+				'preprocess' => false,
+			];
 		}
 	}
 }
