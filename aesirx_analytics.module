@@ -115,7 +115,7 @@ function aesirx_analytics_cron() {
     \Drupal::state()->set('aesirx_analytics.last_cache', $request_time);
     if (analytics_config_is_ok('internal')) {
       \Drupal::service('aesirx_analytics.cli')
-        ->process_analytics(['job', 'geo']);
+        ->processAnalytics(['job', 'geo']);
     }
   }
 }
@@ -126,7 +126,7 @@ function analytics_config_is_ok(string $isStorage = NULL): bool {
 	$res = (!empty($storage)
 		&& (
 			($storage == 'internal' && !empty($conf->get('settings.license')) && \Drupal::service('aesirx_analytics.cli')
-					->analytics_cli_exists())
+					->analyticsCliExists())
 			|| ($storage == 'external' && !empty($conf->get('settings.domain')))
 		));
 

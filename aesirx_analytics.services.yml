@@ -1,9 +1,15 @@
 services:
 
+  aesirx_analytics.cli.env:
+    class: AesirxAnalyticsLib\Cli\Env
+    factory: Drupal\aesirx_analytics\CliEnvFactory::getEnv
+    arguments: [ '@config.factory' ]
+  AesirxAnalyticsLib\Cli\Env: '@aesirx_analytics.cli.env'
+
   aesirx_analytics.cli:
-    class: Drupal\aesirx_analytics\AesirxAnalyticsCli
-    arguments: ['@config.factory', '%app.root%/modules/custom/aesirx_analytics/assets/analytics-cli']
-  Drupal\aesirx_analytics\AesirxAnalyticsCli: '@aesirx_analytics.cli'
+    class: AesirxAnalyticsLib\Cli\AesirxAnalyticsCli
+    arguments: ['@aesirx_analytics.cli.env', '%app.root%/modules/custom/aesirx_analytics/assets/analytics-cli']
+  AesirxAnalyticsLib\Cli\AesirxAnalyticsCli: '@aesirx_analytics.cli'
 
   Drupal\aesirx_analytics\EventSubscriber\AesirxAnalyticsSubscriber:
     class: Drupal\aesirx_analytics\EventSubscriber\AesirxAnalyticsSubscriber
