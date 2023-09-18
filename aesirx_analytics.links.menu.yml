@@ -1,0 +1,11 @@
+aesirx_analytics.config:
+  title: 'Aesirx Analytics'
+  parent: system.admin_config_services
+  description: 'Aesirx analytics configuration'
+  route_name: aesirx_analytics.config
+
+aesirx_analytics.reports_dashboard:
+  title: 'Aesirx Analytics Dashboard'
+  parent: system.admin_reports
+  description: 'View analytics details'
+  route_name: aesirx_analytics.aesirx_bi_dashboard

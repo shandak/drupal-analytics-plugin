@@ -1,0 +1,30 @@
+#biapp {
+  margin-left: -32px;
+  margin-top: -47px;
+  margin-right: -32px;
+  
+  #all_header {
+    position: relative !important;
+  }
+  .arrow {
+    position: static !important;
+  }
+
+  .loader {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 90vh;
+  }
+
+  .Toastify__toast-container--top-right {
+    top: calc(1em + 30px);
+  }
+
+  .main_content_dashboard {
+    height: 100% !important;
+    padding-top: 30px;
+  }
+
+}
+

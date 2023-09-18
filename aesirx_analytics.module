@@ -1,0 +1,140 @@
+<?php
+
+use Drupal\aesirx_analytics\Form\AdminConfig\AesirxAnalyticsAdminConfigForm;
+use Drupal\Core\Cache\Cache;
+use Drupal\Core\Form\FormStateInterface;
+
+/**
+ * @file
+ * Primary module hooks for Aesirx Analytics module.
+ */
+
+function aesirx_analytics_page_attachments(array &$page): void {
+  $conf = \Drupal::config(AesirxAnalyticsAdminConfigForm::SETTINGS);
+
+  // Add module cache tags.
+  $page['#cache']['tags'] = Cache::mergeTags($page['#cache']['tags'] ?? [], $conf->getCacheTags());
+
+  /** @var \Drupal\aesirx_analytics\Helpers\VisibilityTracker $visibilityTracker */
+  $visibilityTracker = \Drupal::service('aesirx_analytics.visibility');
+
+  $account = \Drupal::currentUser();
+
+  if (!$visibilityTracker->getVisibilityPages()
+    || !$visibilityTracker->getVisibilityRoles($account)
+    || !analytics_config_is_ok())
+  {
+    return;
+  }
+
+	$domain =
+		($conf->get('settings.1st_party_server') ?? 'internal') == 'internal'
+			? \Drupal::request()->getSchemeAndHttpHost()
+			: rtrim($conf->get('settings.domain') ?? '', '/');
+
+	$consent =
+		($conf->get('settings.consent') ?? 'false') == 'true'
+			? 'false'
+			: 'true';
+
+	$clientId = $conf->get('settings.client_id') ?? '';
+	$secret = $conf->get('settings.client_secret') ?? '';
+
+	$page['#attached']['html_head'][] = [
+		[
+			'#tag' => 'script',
+			'#value' => 'window.aesirx1stparty="' . $domain . '";window.disableAnalyticsConsent="' . $consent . '";window.aesirxClientID="' . $clientId . '";window.aesirxClientSecret="' . $secret . '";',
+		],
+		'analytics_inline',
+	];
+
+	$page['#attached']['library'][] = 'aesirx_analytics/aesirx_analytics.analytics';
+}
+
+/**
+ * Implements hook_theme().
+ */
+function aesirx_analytics_theme($existing, $type, $theme, $path) {
+	return [
+		'bi-dashboard' => [
+			'render element' => 'elements',
+			'variables' => [
+				'content' => [
+					'endpoint_url' => '',
+					'data_stream' => '',
+					'public_url' => '',
+				],
+			],
+		],
+    'aesirx_config_form' => [
+      'render element' => 'form',
+    ],
+	];
+}
+
+/**
+ * Implements hook_library_info_alter().
+ */
+function aesirx_analytics_library_info_alter(&$libraries, $extension) {
+	if ($extension != 'aesirx_analytics')
+	{
+		return;
+	}
+
+	$manifest = json_decode(
+		file_get_contents(__DIR__ . '/assets/assets-manifest.json', TRUE)
+	);
+
+	foreach (['bi', 'config'] as $one)
+	{
+		foreach ($manifest->entrypoints->{$one}->assets->js ?? [] as $js)
+		{
+			$libraries['aesirx_analytics.' . $one]['js']['assets/' . $js] = [
+				'preprocess' => false,
+			];
+		}
+	}
+}
+
+function aesirx_analytics_form_alter(&$form, FormStateInterface $form_state, $form_id): void {
+	if ($form_id != 'aesirx_analytics_admin_config_form')
+	{
+		return;
+	}
+
+	$form['#attached']['library'][] = 'aesirx_analytics/aesirx_analytics.config';
+}
+
+/**
+ * Implements hook_cron().
+ */
+function aesirx_analytics_cron() {
+  $request_time = \Drupal::time()->getRequestTime();
+  // Ask Geo data hourly.
+  if ($request_time - \Drupal::state()->get('aesirx_analytics.last_cache') >= 3600) {
+    \Drupal::state()->set('aesirx_analytics.last_cache', $request_time);
+    if (analytics_config_is_ok('internal')) {
+      \Drupal::service('aesirx_analytics.cli')
+        ->processAnalytics(['job', 'geo']);
+    }
+  }
+}
+
+function analytics_config_is_ok(string $isStorage = NULL): bool {
+	$conf = \Drupal::config(AesirxAnalyticsAdminConfigForm::SETTINGS);
+	$storage = $conf->get('settings.1st_party_server');
+	$res = (!empty($storage)
+		&& (
+			($storage == 'internal' && !empty($conf->get('settings.license')) && \Drupal::service('aesirx_analytics.cli')
+					->analyticsCliExists())
+			|| ($storage == 'external' && !empty($conf->get('settings.domain')))
+		));
+
+	if ($res
+		&& !is_null($isStorage))
+	{
+		$res = $storage == $isStorage;
+	}
+
+	return $res;
+}

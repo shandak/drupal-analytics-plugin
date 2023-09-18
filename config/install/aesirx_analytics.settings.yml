@@ -1,0 +1,14 @@
+settings:
+  1st_party_server: 'internal'
+  consent: true
+  client_id: ''
+  client_secret: ''
+  license: ''
+  domain: ''
+visibility:
+  request_path_mode: 0
+  request_path_pages: "/admin\n/admin/*\n/batch\n/node/add*\n/node/*/*\n/user/*/*"
+  user_role_mode: 1
+  user_role_roles: {  }
+  user_account_mode: 1
+langcode: en

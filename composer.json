@@ -1,0 +1,9 @@
+{
+    "name": "vshandak/aesirx_analytics",
+    "description": "Aesirx analytics plugin. When you join forces with AesirX, you're not just becoming a Partner - you're also becoming a freedom fighter in the battle for privacy!",
+    "type": "drupal-custom-module",
+    "license": "GPL-2.0-or-later",
+    "require": {
+        "vshandak/aesirx_analytics_lib": "^v1"
+    }
+}
